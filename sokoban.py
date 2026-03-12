@@ -1,3 +1,5 @@
+import pygame
+
 # Jelolesek
 #   # fal
 #   ' ' ures mezo
@@ -21,19 +23,29 @@ board = [list(level_row_text) for level_row_text in [
 board_height = len(board)
 board_width = max(len(board_row) for board_row in board)
 
+tile_size = 64
+gray = pygame.Color("gray")  # fal
+beige = pygame.Color("lightgray")  # padlo
+red = pygame.Color("red")  # cel
+brown = pygame.Color("peru")  # lada
+blue = pygame.Color("blue")  # jatekos
+# Billentyu -> iranyvektor
+direction_by_key = {
+    pygame.K_UP: (0, -1),
+    pygame.K_DOWN: (0, 1),
+    pygame.K_LEFT: (-1, 0),
+    pygame.K_RIGHT: (1, 0),
+}
+
 # Kezdo jatekos pozicio megkeresese
-for row_index in range(board_height):
-    for column_index in range(len(board[row_index])):
-        if board[row_index][column_index] in "@+":
-            player_x, player_y = column_index, row_index
+def find_player():
+    for row_index, board_row in enumerate(board):
+        for column_index, tile in enumerate(board_row):
+            if tile in "@+":
+                return column_index, row_index
+    return 0, 0
 
-
-# A teljes palyat kiirasa
-def show():
-    for board_row in board:
-        print("".join(board_row))
-    print()
-
+player_x, player_y = find_player()
 
 # Akkor nyertunk ha mar nincs sima lada $ a palyan
 def win():
@@ -90,18 +102,42 @@ def move(delta_x, delta_y):
 
     player_x, player_y = next_player_x, next_player_y
 
+# A teljes palyat kirajzolja pygame-ben
+def draw(screen):
+    for row_index in range(board_height):
+        for column_index in range(board_width):
+            tile = board[row_index][column_index]
+            rect = pygame.Rect(column_index * tile_size, row_index * tile_size, tile_size, tile_size)
+            pygame.draw.rect(screen, gray if tile == "#" else beige, rect)
+            if tile in "$*":
+                pygame.draw.rect(screen, brown, rect)
+            if tile in "@+":
+                pygame.draw.circle(screen, blue, rect.center, tile_size // 3)
+            if tile in ".+*":
+                pygame.draw.circle(screen, red, rect.center, tile_size // 8)
 
-# Billentyu -> iranyvektor
-direction_by_key = {"w": (0, -1), "s": (0, 1), "a": (-1, 0), "d": (1, 0)}
+
+# Fo ciklus
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((board_width * tile_size, board_height * tile_size))
+    clock = pygame.time.Clock()
+
+    solved_printed = False
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+            if event.type == pygame.KEYDOWN and event.key in direction_by_key and not win():
+                move(direction_by_key[event.key][0], direction_by_key[event.key][1])
+        if win() and not solved_printed:
+            print("MEGOLDVA!")
+            solved_printed = True
+        draw(screen)
+        pygame.display.flip()
+        clock.tick(30)
 
 
-while True:
-    show()
-
-    if win():
-        print("Solved!")
-        break
-
-    pressed_key = input("w a s d: ")
-    if pressed_key in direction_by_key:
-        move(direction_by_key[pressed_key][0], direction_by_key[pressed_key][1])
+main()
