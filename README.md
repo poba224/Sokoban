@@ -21,9 +21,11 @@ Részletesebb leírás:
 
 ## Indítás
 - Környezet: Python 3.11.5
+- Telepítsd a pygame-et: "pip install pygame"
 - Indítás: "python sokoban.py"
-- Irányítás konzolban inputként: "w" fel, "s" le, "a" balra, "d" jobbra
-- Kilépés: Ctrl + C
+- A játék pygame ablakban fut
+- Irányítás: nyílakkal (fel, le, balra, jobbra)
+- Kilépés az ablak bezárásával
 
 ## Konvencionális jelölések
 - "#" fal
