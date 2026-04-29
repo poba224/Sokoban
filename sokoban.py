@@ -9,15 +9,19 @@ import pygame
 #   @ jatekos
 #   + jatekos a celmezon
 
-# Demo palya
-board = [list(level_row_text) for level_row_text in [
-    "######",
-    "#  @.#",
-    "#   $#",
-    "# $  #",
-    "#  . #",
-    "######"
-]]
+
+# Palya betoltese fajlbol
+def load_level(file_path):
+    f = open(file_path)
+    text = f.read()
+    f.close()
+    lines = text.splitlines()
+    return [list(line) for line in lines]
+
+
+# Palya kivalasztasa itt
+level_path = "levels/36.txt"
+board = load_level(level_path)
 
 # Palya meretek
 board_height = len(board)
@@ -29,6 +33,7 @@ beige = pygame.Color("lightgray")  # padlo
 red = pygame.Color("red")  # cel
 brown = pygame.Color("peru")  # lada
 blue = pygame.Color("blue")  # jatekos
+
 # Billentyu -> iranyvektor
 direction_by_key = {
     pygame.K_UP: (0, -1),
@@ -117,7 +122,6 @@ def draw(screen):
                 pygame.draw.circle(screen, red, rect.center, tile_size // 8)
 
 
-# Fo ciklus
 def main():
     pygame.init()
     screen = pygame.display.set_mode((board_width * tile_size, board_height * tile_size))
