@@ -1,4 +1,5 @@
 import time
+import deadlock
 
 directions = [
     ("L", -1, 0),
@@ -70,6 +71,9 @@ def try_move(px, py, current_boxes, dx, dy, walls):
 # BFS kereses
 def solve(board):
     walls, goals, boxes, player_x, player_y = parse_board(board)
+    height = len(board)
+    width = max(len(row) for row in board)
+    dead_squares = deadlock.compute_dead_squares(walls, goals, height, width)
 
     start_boxes = frozenset(boxes)
 
@@ -91,19 +95,22 @@ def solve(board):
             result = try_move(px, py, current_boxes, dx, dy, walls)
             if result is not None:
                 nx, ny, new_boxes = result
-                state = ((nx, ny), new_boxes)
-                if state not in visited:
-                    visited.add(state)
-                    if solved(new_boxes, goals):
-                        return path + letter
-                    queue.append((nx, ny, new_boxes, path + letter))
+                nem_halott = not deadlock.is_dead_state(new_boxes, goals, dead_squares)
+                if nem_halott:
+                    state = ((nx, ny), new_boxes)
+                    if state not in visited:
+                        visited.add(state)
+                        if solved(new_boxes, goals):
+                            return path + letter
+                        queue.append((nx, ny, new_boxes, path + letter))
 
     return None
 
 
 def main():
-    level_path = "levels/01.txt"
+    level_path = "levels/41.txt"
     board = load_level(level_path)
+
     start_time = time.time()
     solution = solve(board)
     elapsed = time.time() - start_time

@@ -1,5 +1,6 @@
 import heapq
 import time
+import deadlock
 
 directions = [
     ("L", -1, 0),
@@ -70,7 +71,7 @@ def heuristic(boxes, goals):
             total += best_distance
             unused_goals.remove(best_goal)
 
-    return 2 * total
+    return 5 * total
 
 
 def try_move(px, py, current_boxes, dx, dy, walls):
@@ -95,6 +96,9 @@ def try_move(px, py, current_boxes, dx, dy, walls):
 # A* kereses
 def solve(board, max_seconds=6):
     walls, goals, boxes, player_x, player_y = parse_board(board)
+    height = len(board)
+    width = max(len(row) for row in board)
+    dead_squares = deadlock.compute_dead_squares(walls, goals, height, width)
     start_time = time.time()
 
     start_boxes = frozenset(boxes)
@@ -125,19 +129,22 @@ def solve(board, max_seconds=6):
             result = try_move(px, py, current_boxes, dx, dy, walls)
             if result is not None:
                 nx, ny, new_boxes = result
-                new_state = ((nx, ny), new_boxes)
-                if new_state not in visited:
-                    new_cost = cost + 1
-                    new_priority = new_cost + heuristic(new_boxes, goals)
-                    counter += 1
-                    heapq.heappush(heap, (new_priority, new_cost, counter, nx, ny, new_boxes, path + letter))
+                nem_halott = not deadlock.is_dead_state(new_boxes, goals, dead_squares)
+                if nem_halott:
+                    new_state = ((nx, ny), new_boxes)
+                    if new_state not in visited:
+                        new_cost = cost + 1
+                        new_priority = new_cost + heuristic(new_boxes, goals)
+                        counter += 1
+                        heapq.heappush(heap, (new_priority, new_cost, counter, nx, ny, new_boxes, path + letter))
 
     return None
 
 
 def main():
-    level_path = "levels/38.txt"
+    level_path = "levels/01.txt"
     board = load_level(level_path)
+
     start_time = time.time()
     solution = solve(board)
     elapsed = time.time() - start_time

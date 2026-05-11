@@ -15,7 +15,7 @@ solvers = [
 ]
 
 
-def plot_results(ax, solvers, results, value_index, title, ylabel, level_names, tick_labels):
+def plot_results(ax, results, value_index, title, ylabel, level_names, tick_labels):
     for solver in solvers:
         name = solver[0]
         xs = []
@@ -41,10 +41,10 @@ def main():
     results = []
     level_names = []
 
-    for file_name in os.listdir("levels"):
-        if file_name.endswith(".txt") and file_name != "solved.txt":
-            level_names.append(file_name)
-    level_names.sort()
+    # Csak a szamozott palyak
+    for name in sorted(os.listdir("levels")):
+        if name[:2].isdigit() and name.endswith(".txt"):
+            level_names.append(name)
 
     tick_labels = []
     for index in range(len(level_names)):
@@ -65,15 +65,18 @@ def main():
             t0 = time.time()
             solution = solve_fn(board)
             elapsed = time.time() - t0
-            results.append((level_name, name, elapsed, len(solution)))
+            hossz = 0
+            if solution is not None:
+                hossz = len(solution)
+            results.append((level_name, name, elapsed, hossz))
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 
     # Megoldasi idok
-    plot_results(ax1, solvers, results, 2, "Megoldási idő solverenként", "idő (s)", level_names, tick_labels)
+    plot_results(ax1, results, 2, "Megoldási idő solverenként", "idő (s)", level_names, tick_labels)
 
     # Megoldas hosszak
-    plot_results(ax2, solvers, results, 3, "Megoldás hossza solverenként", "lépésszám", level_names, tick_labels)
+    plot_results(ax2, results, 3, "Megoldás hossza solverenként", "lépésszám", level_names, tick_labels)
 
     plt.tight_layout()
     plt.show()
